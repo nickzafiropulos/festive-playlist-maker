@@ -326,8 +326,17 @@ export class SpotifyClient {
       if (status === 403) {
         const errorData = axiosError.response?.data;
         
+        // Log full error for debugging
+        console.error("Spotify 403 Error Details:", {
+          status,
+          data: errorData,
+          url: axiosError.config?.url,
+          method: axiosError.config?.method,
+        });
+        
         // Extract error message properly - handle both object and string formats
-        let errorMessage = "Access forbidden. Please make sure you granted all required permissions when connecting with Spotify.";
+        let errorMessage = "Access forbidden.";
+        let additionalInfo = "";
         
         if (errorData) {
           const error = (errorData as any)?.error;
@@ -337,8 +346,13 @@ export class SpotifyClient {
             } else if (typeof error === 'object' && error.message) {
               errorMessage = error.message;
             } else if (typeof error === 'object') {
-              // Try to stringify the object nicely
-              errorMessage = JSON.stringify(error);
+              // Try to extract meaningful info from error object
+              if (error.status) {
+                errorMessage = `Status ${error.status}`;
+              }
+              if (error.reason) {
+                additionalInfo = `Reason: ${error.reason}`;
+              }
             }
           } else if ((errorData as any)?.error_description) {
             errorMessage = (errorData as any).error_description;
@@ -347,12 +361,34 @@ export class SpotifyClient {
           }
         }
         
+        // Check if this is a development mode restriction
+        const requestUrl = axiosError.config?.url || '';
+        const isDevelopmentModeIssue = 
+          errorMessage.toLowerCase().includes('developer') ||
+          errorMessage.toLowerCase().includes('collaborator') ||
+          errorMessage.toLowerCase().includes('whitelist');
+        
+        let helpText = "";
+        if (isDevelopmentModeIssue) {
+          helpText = `\n\n🔧 DEVELOPMENT MODE DETECTED:\n` +
+            `Your Spotify app is in Development Mode, which restricts access.\n\n` +
+            `To fix this:\n` +
+            `1. Go to: https://developer.spotify.com/dashboard\n` +
+            `2. Click your app → "Edit Settings"\n` +
+            `3. Scroll to "Users and Access"\n` +
+            `4. Click "Add User" and add your Spotify email address\n` +
+            `5. Save and try connecting again\n\n` +
+            `OR submit your app for review to enable it for all users.`;
+        } else {
+          helpText = `\n\nThis usually means:\n` +
+            `1. You didn't grant all required permissions when connecting\n` +
+            `2. The app is in Development Mode (add yourself as a user)\n` +
+            `3. The redirect URI doesn't match exactly\n` +
+            `4. Try disconnecting and reconnecting your Spotify account`;
+        }
+        
         return new Error(
-          `Spotify API Error: ${errorMessage} (Status: 403)\n\n` +
-          `This usually means:\n` +
-          `1. You didn't grant all required permissions when connecting\n` +
-          `2. The app needs to be re-authorized\n` +
-          `3. Try disconnecting and reconnecting your Spotify account`
+          `Spotify API Error: ${errorMessage}${additionalInfo ? ` - ${additionalInfo}` : ''} (Status: 403)${helpText}`
         );
       }
       
