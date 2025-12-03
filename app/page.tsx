@@ -293,6 +293,9 @@ export default function Home() {
   }
 
   if (appState === "error") {
+    const is403Error = error?.includes("403") || error?.toLowerCase().includes("forbidden");
+    const needsReconnect = is403Error && !musicProfile;
+    
     return (
       <main className="min-h-screen flex flex-col">
         <div className="container mx-auto px-4 py-12 flex-1">
@@ -300,25 +303,50 @@ export default function Home() {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Oops! Something went wrong</AlertTitle>
-              <AlertDescription>{error || "An unexpected error occurred"}</AlertDescription>
+              <AlertDescription className="whitespace-pre-line">
+                {error || "An unexpected error occurred"}
+                {is403Error && (
+                  <div className="mt-4 p-3 bg-destructive/10 rounded-md text-sm">
+                    <strong>403 Forbidden Error:</strong> This usually means you didn't grant all required permissions when connecting with Spotify.
+                    <br />
+                    <br />
+                    <strong>Quick Fix:</strong>
+                    <ol className="list-decimal list-inside mt-2 space-y-1">
+                      <li>Go to <a href="https://www.spotify.com/account/apps/" target="_blank" rel="noopener noreferrer" className="underline">your Spotify apps page</a></li>
+                      <li>Remove access to this app</li>
+                      <li>Come back and click "Reconnect with Spotify" below</li>
+                      <li>Make sure to approve ALL permissions when asked</li>
+                    </ol>
+                  </div>
+                )}
+              </AlertDescription>
             </Alert>
             
             {musicProfile && <MusicProfileCard profile={musicProfile} />}
             
-            <div className="flex gap-4">
-              <Button onClick={handleStartOver} variant="outline">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Start Over
-              </Button>
-              {musicProfile && (
-                <Button onClick={handleGeneratePlaylist}>
-                  Try Generating Again
+            <div className="flex flex-wrap gap-4">
+              {needsReconnect ? (
+                <Button onClick={handleConnectSpotify} className="bg-primary">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Reconnect with Spotify
                 </Button>
-              )}
-              {!musicProfile && (
-                <Button onClick={handleAnalyzeProfile}>
-                  Try Analyzing Again
-                </Button>
+              ) : (
+                <>
+                  <Button onClick={handleStartOver} variant="outline">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Start Over
+                  </Button>
+                  {musicProfile && (
+                    <Button onClick={handleGeneratePlaylist}>
+                      Try Generating Again
+                    </Button>
+                  )}
+                  {!musicProfile && (
+                    <Button onClick={handleAnalyzeProfile}>
+                      Try Analyzing Again
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>

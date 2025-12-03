@@ -319,20 +319,56 @@ export class SpotifyClient {
    */
   private handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<SpotifyError>;
-      if (axiosError.response?.data?.error) {
+      const axiosError = error as AxiosError<SpotifyError | { error?: string; error_description?: string }>;
+      const status = axiosError.response?.status;
+      
+      // Handle 403 Forbidden - usually means missing scopes or permissions
+      if (status === 403) {
+        const errorData = axiosError.response?.data;
+        const errorMessage = 
+          (errorData as any)?.error?.message ||
+          (errorData as any)?.error_description ||
+          (errorData as any)?.error ||
+          "Access forbidden. Please make sure you granted all required permissions when connecting with Spotify.";
+        
         return new Error(
-          `Spotify API Error: ${axiosError.response.data.error.message} (Status: ${axiosError.response.data.error.status})`
+          `Spotify API Error: ${errorMessage} (Status: 403)\n\n` +
+          `This usually means:\n` +
+          `1. You didn't grant all required permissions when connecting\n` +
+          `2. The app needs to be re-authorized\n` +
+          `3. Try disconnecting and reconnecting your Spotify account`
         );
       }
-      if (axiosError.response?.status === 429) {
+      
+      // Handle 401 Unauthorized
+      if (status === 401) {
+        return new Error(
+          "Authentication failed. Please reconnect with Spotify."
+        );
+      }
+      
+      // Handle rate limiting
+      if (status === 429) {
         const retryAfter = axiosError.response.headers["retry-after"];
         return new Error(
           `Rate limit exceeded. Retry after ${retryAfter || "some time"} seconds.`
         );
       }
+      
+      // Handle other Spotify API errors
+      if (axiosError.response?.data) {
+        const errorData = axiosError.response.data as any;
+        if (errorData.error) {
+          const message = errorData.error.message || errorData.error;
+          const errorStatus = errorData.error.status || status;
+          return new Error(
+            `Spotify API Error: ${message} (Status: ${errorStatus})`
+          );
+        }
+      }
+      
       return new Error(
-        `Request failed: ${axiosError.message || "Unknown error"}`
+        `Request failed: ${axiosError.message || "Unknown error"} (Status: ${status || "unknown"})`
       );
     }
     return error instanceof Error ? error : new Error("Unknown error occurred");
