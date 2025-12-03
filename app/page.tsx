@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { Hero } from "@/components/Hero";
 import { MusicProfileCard } from "@/components/MusicProfileCard";
 import { PlaylistGenerator } from "@/components/PlaylistGenerator";
@@ -273,6 +273,29 @@ export default function Home() {
             <DemoModeBanner />
           </div>
         )}
+        {status === "authenticated" && (
+          <div className="container mx-auto px-4 pt-4">
+            <Alert className="mb-4 border-primary/50 bg-primary/10">
+              <AlertCircle className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-sm">
+                <strong>Connected as:</strong> {session?.user?.name || session?.user?.email}
+                <Button
+                  onClick={async () => {
+                    await signOut({ redirect: false });
+                    setAppState("landing");
+                    setError(null);
+                    setMusicProfile(null);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="ml-4"
+                >
+                  Disconnect
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
         <Hero onConnectSpotify={handleConnectSpotify} />
         <Footer />
       </main>
@@ -326,10 +349,28 @@ export default function Home() {
             
             <div className="flex flex-wrap gap-4">
               {needsReconnect ? (
-                <Button onClick={handleConnectSpotify} className="bg-primary">
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Reconnect with Spotify
-                </Button>
+                <>
+                  <Button 
+                    onClick={async () => {
+                      await signOut({ redirect: false });
+                      handleConnectSpotify();
+                    }} 
+                    className="bg-primary"
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Disconnect & Reconnect with Spotify
+                  </Button>
+                  <Button 
+                    onClick={async () => {
+                      await signOut({ redirect: false });
+                      setAppState("landing");
+                      setError(null);
+                    }} 
+                    variant="outline"
+                  >
+                    Disconnect Spotify
+                  </Button>
+                </>
               ) : (
                 <>
                   <Button onClick={handleStartOver} variant="outline">
@@ -344,6 +385,19 @@ export default function Home() {
                   {!musicProfile && (
                     <Button onClick={handleAnalyzeProfile}>
                       Try Analyzing Again
+                    </Button>
+                  )}
+                  {status === "authenticated" && (
+                    <Button 
+                      onClick={async () => {
+                        await signOut({ redirect: false });
+                        setAppState("landing");
+                        setError(null);
+                        setMusicProfile(null);
+                      }} 
+                      variant="outline"
+                    >
+                      Disconnect Spotify
                     </Button>
                   )}
                 </>
