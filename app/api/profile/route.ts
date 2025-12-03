@@ -59,14 +59,26 @@ export async function GET(request: NextRequest) {
       console.error("Error object:", JSON.stringify(error, null, 2));
     }
     
+    // Extract status code from error message if it's a Spotify API error
+    let statusCode = 500;
+    let errorMessage = error instanceof Error
+      ? error.message
+      : "Failed to analyze your music profile. Please try again.";
+    
+    // Check for specific Spotify API error status codes in the error message
+    if (errorMessage.includes("Status: 403")) {
+      statusCode = 403;
+    } else if (errorMessage.includes("Status: 401")) {
+      statusCode = 401;
+    } else if (errorMessage.includes("Status: 429")) {
+      statusCode = 429;
+    }
+    
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to analyze your music profile. Please try again.",
+        error: errorMessage,
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }

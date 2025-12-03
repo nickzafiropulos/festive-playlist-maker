@@ -332,6 +332,7 @@ export class SpotifyClient {
           data: errorData,
           url: axiosError.config?.url,
           method: axiosError.config?.method,
+          headers: axiosError.response?.headers,
         });
         
         // Extract error message properly - handle both object and string formats
@@ -363,10 +364,13 @@ export class SpotifyClient {
         
         // Check if this is a development mode restriction
         const requestUrl = axiosError.config?.url || '';
+        const errorMessageLower = errorMessage.toLowerCase();
         const isDevelopmentModeIssue = 
-          errorMessage.toLowerCase().includes('developer') ||
-          errorMessage.toLowerCase().includes('collaborator') ||
-          errorMessage.toLowerCase().includes('whitelist');
+          errorMessageLower.includes('developer') ||
+          errorMessageLower.includes('collaborator') ||
+          errorMessageLower.includes('whitelist') ||
+          errorMessageLower.includes('not approved') ||
+          errorMessageLower.includes('user not found');
         
         let helpText = "";
         if (isDevelopmentModeIssue) {
@@ -395,7 +399,7 @@ export class SpotifyClient {
       // Handle 401 Unauthorized
       if (status === 401) {
         return new Error(
-          "Authentication failed. Please reconnect with Spotify."
+          "Authentication failed. Please reconnect with Spotify. (Status: 401)"
         );
       }
       
@@ -403,7 +407,7 @@ export class SpotifyClient {
       if (status === 429) {
         const retryAfter = axiosError.response?.headers?.["retry-after"];
         return new Error(
-          `Rate limit exceeded. Retry after ${retryAfter || "some time"} seconds.`
+          `Rate limit exceeded. Retry after ${retryAfter || "some time"} seconds. (Status: 429)`
         );
       }
       
