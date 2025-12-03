@@ -50,6 +50,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(profile);
   } catch (error) {
     console.error("Error fetching music profile:", error);
+    
+    // Log full error details for debugging
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    } else {
+      console.error("Error object:", JSON.stringify(error, null, 2));
+    }
+    
     return NextResponse.json(
       {
         error:
