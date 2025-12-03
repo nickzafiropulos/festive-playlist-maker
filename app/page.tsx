@@ -335,10 +335,10 @@ export default function Home() {
                     <br />
                     <strong>Quick Fix:</strong>
                     <ol className="list-decimal list-inside mt-2 space-y-1">
-                      <li>Go to <a href="https://www.spotify.com/account/apps/" target="_blank" rel="noopener noreferrer" className="underline">your Spotify apps page</a></li>
-                      <li>Remove access to this app</li>
-                      <li>Come back and click "Reconnect with Spotify" below</li>
-                      <li>Make sure to approve ALL permissions when asked</li>
+                      <li>Click "Disconnect & Reconnect with Spotify" button below (easiest way!)</li>
+                      <li>OR go to <a href="https://www.spotify.com/account/apps/" target="_blank" rel="noopener noreferrer" className="underline">your Spotify apps page</a> and remove access</li>
+                      <li>When reconnecting, make sure to approve ALL permissions when Spotify asks</li>
+                      <li>Don't skip any permission requests!</li>
                     </ol>
                   </div>
                 )}
