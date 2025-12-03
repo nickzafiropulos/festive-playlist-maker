@@ -325,11 +325,27 @@ export class SpotifyClient {
       // Handle 403 Forbidden - usually means missing scopes or permissions
       if (status === 403) {
         const errorData = axiosError.response?.data;
-        const errorMessage = 
-          (errorData as any)?.error?.message ||
-          (errorData as any)?.error_description ||
-          (errorData as any)?.error ||
-          "Access forbidden. Please make sure you granted all required permissions when connecting with Spotify.";
+        
+        // Extract error message properly - handle both object and string formats
+        let errorMessage = "Access forbidden. Please make sure you granted all required permissions when connecting with Spotify.";
+        
+        if (errorData) {
+          const error = (errorData as any)?.error;
+          if (error) {
+            if (typeof error === 'string') {
+              errorMessage = error;
+            } else if (typeof error === 'object' && error.message) {
+              errorMessage = error.message;
+            } else if (typeof error === 'object') {
+              // Try to stringify the object nicely
+              errorMessage = JSON.stringify(error);
+            }
+          } else if ((errorData as any)?.error_description) {
+            errorMessage = (errorData as any).error_description;
+          } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          }
+        }
         
         return new Error(
           `Spotify API Error: ${errorMessage} (Status: 403)\n\n` +
@@ -359,8 +375,17 @@ export class SpotifyClient {
       if (axiosError.response?.data) {
         const errorData = axiosError.response.data as any;
         if (errorData.error) {
-          const message = errorData.error.message || errorData.error;
-          const errorStatus = errorData.error.status || status;
+          let message: string;
+          if (typeof errorData.error === 'string') {
+            message = errorData.error;
+          } else if (typeof errorData.error === 'object' && errorData.error.message) {
+            message = errorData.error.message;
+          } else if (typeof errorData.error === 'object') {
+            message = JSON.stringify(errorData.error);
+          } else {
+            message = String(errorData.error);
+          }
+          const errorStatus = errorData.error?.status || status;
           return new Error(
             `Spotify API Error: ${message} (Status: ${errorStatus})`
           );
