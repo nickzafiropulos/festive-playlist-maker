@@ -1,4 +1,4 @@
-# 🎄 Festive Playlist Architect
+# 🎄 Festive Playlist Maker
 
 Create your perfect personalized Christmas playlist powered by AI. We analyze your music taste and blend it with festive holiday spirit to craft a unique musical journey.
 
