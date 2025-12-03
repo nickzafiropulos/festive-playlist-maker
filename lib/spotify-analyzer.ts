@@ -25,6 +25,14 @@ export async function analyzeUserMusicProfile(
 ): Promise<UserMusicProfile> {
   const { topTracksLimit = 50, recentlyPlayedLimit = 50 } = options;
 
+  // First, test basic access with /me endpoint
+  try {
+    await client.getCurrentUser();
+  } catch (error) {
+    console.error("Failed to get current user - this will help diagnose the 403 error:", error);
+    throw error;
+  }
+
   // Fetch top tracks from all time ranges
   const [shortTermTracks, mediumTermTracks, longTermTracks, recentlyPlayed] =
     await Promise.all([

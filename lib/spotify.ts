@@ -331,9 +331,16 @@ export class SpotifyClient {
           status,
           data: errorData,
           url: axiosError.config?.url,
+          fullUrl: axiosError.config?.url ? `${SPOTIFY_API_BASE_URL}${axiosError.config.url}` : undefined,
           method: axiosError.config?.method,
           headers: axiosError.response?.headers,
+          requestHeaders: axiosError.config?.headers,
         });
+        
+        // Log the raw response for debugging
+        if (errorData) {
+          console.error("Raw Spotify Error Response:", JSON.stringify(errorData, null, 2));
+        }
         
         // Extract error message properly - handle both object and string formats
         let errorMessage = "Access forbidden.";
