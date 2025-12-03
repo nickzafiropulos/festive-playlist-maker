@@ -5,6 +5,9 @@ import { GroqClient, generatePlaylistNarrative } from "@/lib/groq";
 import { groqRateLimiter, getRateLimitId } from "@/lib/rate-limit";
 import type { UserMusicProfile } from "@/types/spotify";
 
+// Force dynamic rendering (required when using headers/cookies)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

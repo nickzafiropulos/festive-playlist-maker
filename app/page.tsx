@@ -16,7 +16,6 @@ import { FestiveLoading } from "@/components/FestiveLoading";
 import { ConfettiEffect } from "@/components/ConfettiEffect";
 import { DemoModeBanner } from "@/components/DemoModeBanner";
 import { analytics } from "@/lib/analytics";
-import { isDemoMode } from "@/lib/env";
 import { demoMusicProfile, demoPlaylistNarrative } from "@/lib/demo-data";
 import type { UserMusicProfile } from "@/types/spotify";
 import type { PlaylistNarrative } from "@/types/groq";
@@ -49,10 +48,28 @@ export default function Home() {
   const [trackUris, setTrackUris] = useState<string[]>([]);
   const [createdPlaylist, setCreatedPlaylist] = useState<CreatedPlaylist | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [demoMode, setDemoMode] = useState<boolean>(false);
+
+  // Check demo mode status on mount
+  useEffect(() => {
+    const checkDemoMode = async () => {
+      try {
+        const response = await fetch("/api/demo-mode");
+        if (response.ok) {
+          const data = await response.json();
+          setDemoMode(data.isDemoMode);
+        }
+      } catch (err) {
+        // If API fails, assume not demo mode (show connect button)
+        setDemoMode(false);
+      }
+    };
+    checkDemoMode();
+  }, []);
 
   // Auto-fetch profile when authenticated or load demo mode
   useEffect(() => {
-    if (isDemoMode() && appState === "landing") {
+    if (demoMode && appState === "landing") {
       // Demo mode: load demo data
       setMusicProfile(demoMusicProfile);
       setAppState("profile-ready");
@@ -68,7 +85,7 @@ export default function Home() {
     // Note: We don't track unauthenticated status as an error
     // since it's a normal state when user hasn't logged in yet
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, session?.accessToken, appState]);
+  }, [status, session?.accessToken, appState, demoMode]);
 
   const handleConnectSpotify = () => {
     analytics.track("spotify_connect_clicked");
@@ -115,7 +132,7 @@ export default function Home() {
     analytics.track("playlist_generation_started");
 
     // Demo mode: use demo data
-    if (isDemoMode()) {
+    if (demoMode) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       setPlaylistNarrative(demoPlaylistNarrative);
       setTrackUris([]); // No real tracks in demo mode
@@ -190,7 +207,7 @@ export default function Home() {
     if (!playlistNarrative || !trackUris.length) return;
 
     // Demo mode: show success without creating
-    if (isDemoMode()) {
+    if (demoMode) {
       setCreatedPlaylist({
         playlistId: "demo-playlist",
         playlistUrl: "https://open.spotify.com",
@@ -251,7 +268,7 @@ export default function Home() {
   if (appState === "landing") {
     return (
       <main className="min-h-screen flex flex-col">
-        {isDemoMode() && (
+        {demoMode && (
           <div className="container mx-auto px-4 pt-4">
             <DemoModeBanner />
           </div>
@@ -360,7 +377,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-12 flex-1">
         <div className="max-w-4xl mx-auto space-y-8">
         {/* Demo Mode Banner */}
-        {isDemoMode() && <DemoModeBanner />}
+        {demoMode && <DemoModeBanner />}
 
         {/* Error Alert */}
         {error && (

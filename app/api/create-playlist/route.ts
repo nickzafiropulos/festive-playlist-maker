@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { SpotifyClient } from "@/lib/spotify";
 import type { PlaylistNarrative } from "@/types/groq";
 
+// Force dynamic rendering (required when using headers/cookies)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

@@ -5,6 +5,9 @@ import { SpotifyClient } from "@/lib/spotify";
 import { analyzeUserMusicProfile } from "@/lib/spotify-analyzer";
 import { spotifyRateLimiter, getRateLimitId } from "@/lib/rate-limit";
 
+// Force dynamic rendering (required when using headers/cookies)
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
