@@ -329,17 +329,32 @@ export default function Home() {
               <AlertDescription className="whitespace-pre-line">
                 {error || "An unexpected error occurred"}
                 {is403Error && (
-                  <div className="mt-4 p-3 bg-destructive/10 rounded-md text-sm">
-                    <strong>403 Forbidden Error:</strong> This usually means you didn't grant all required permissions when connecting with Spotify.
-                    <br />
-                    <br />
-                    <strong>Quick Fix:</strong>
-                    <ol className="list-decimal list-inside mt-2 space-y-1">
-                      <li>Click "Disconnect & Reconnect with Spotify" button below (easiest way!)</li>
-                      <li>OR go to <a href="https://www.spotify.com/account/apps/" target="_blank" rel="noopener noreferrer" className="underline">your Spotify apps page</a> and remove access</li>
-                      <li>When reconnecting, make sure to approve ALL permissions when Spotify asks</li>
-                      <li>Don't skip any permission requests!</li>
-                    </ol>
+                  <div className="mt-4 p-4 bg-destructive/10 rounded-md text-sm space-y-3">
+                    <div>
+                      <strong className="text-base">🔧 Most Likely Issue: Development Mode</strong>
+                      <p className="mt-2">
+                        Your Spotify app is in <strong>Development Mode</strong>, which means only users explicitly added in the Spotify Dashboard can use it, even if they grant all permissions.
+                      </p>
+                    </div>
+                    <div>
+                      <strong>✅ Fix: Add Yourself as a User</strong>
+                      <ol className="list-decimal list-inside mt-2 space-y-1 ml-2">
+                        <li>Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Spotify Developer Dashboard</a></li>
+                        <li>Click your app → <strong>"Edit Settings"</strong></li>
+                        <li>Scroll to <strong>"Users and Access"</strong> section</li>
+                        <li>Click <strong>"Add User"</strong> button</li>
+                        <li>Enter your <strong>Spotify email address</strong> (the one you use to log in)</li>
+                        <li>Click <strong>"Add"</strong> and then <strong>"Save"</strong></li>
+                        <li>Wait 1-2 minutes, then try connecting again</li>
+                      </ol>
+                    </div>
+                    <div className="pt-2 border-t border-destructive/20">
+                      <strong>Other Possible Issues:</strong>
+                      <ul className="list-disc list-inside mt-1 space-y-1 ml-2 text-xs">
+                        <li>Redirect URI doesn't match exactly in Spotify Dashboard</li>
+                        <li>Try disconnecting and reconnecting after adding yourself as a user</li>
+                      </ul>
+                    </div>
                   </div>
                 )}
               </AlertDescription>
