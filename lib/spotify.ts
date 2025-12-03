@@ -349,7 +349,7 @@ export class SpotifyClient {
       
       // Handle rate limiting
       if (status === 429) {
-        const retryAfter = axiosError.response.headers["retry-after"];
+        const retryAfter = axiosError.response?.headers?.["retry-after"];
         return new Error(
           `Rate limit exceeded. Retry after ${retryAfter || "some time"} seconds.`
         );
